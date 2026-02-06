@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drive Guardian AI | Advanced Driver Monitoring System</title>
+    
+    <!-- MediaPipe for face detection -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="test.css">
+    
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-particles">
+        <div class="particle" style="width: 300px; height: 300px; top: 10%; left: 5%;"></div>
+        <div class="particle" style="width: 200px; height: 200px; top: 60%; right: 10%; animation-delay: -5s;"></div>
+        <div class="particle" style="width: 150px; height: 150px; bottom: 20%; left: 20%; animation-delay: -10s;"></div>
+        <div class="particle" style="width: 250px; height: 250px; top: 30%; right: 20%; animation-delay: -15s;"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#" class="nav-logo">
+            <div class="logo-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <span class="logo-text">Drive Guardian AI</span>
+        </a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#demo">Live Demo</a>
+            <a href="#analytics">Analytics</a>
+            <a href="#history">History</a>
+            <a href="#achievements">Achievements</a>
+            <a href="#publish">Publish</a>
+        <a href="#" class="nav-cta" onclick="openLoginModal()">Driver Login</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <span class="hero-badge">AI-Powered Safety</span>
+            <h1>Drive Safer with Real-time Drowsiness Detection</h1>
+            <p>Drive Guardian AI uses advanced computer vision and machine learning to monitor driver alertness and prevent accidents before they happen.</p>
+            <div class="controls">
+                <button class="btn btn-primary" onclick="scrollToDemo()">
+                    <i class="fas fa-play-circle"></i> Try Live Demo
+                </button>
+                <button class="btn btn-secondary" onclick="openModal('loginModal')">
+                    <i class="fas fa-user"></i> Driver Login
+                </button>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="demo-preview">
+                <div class="demo-screen">
+                    <div class="demo-status">
+                        <div class="indicator"></div>
+                        <span>AI Monitoring Active</span>
+                    </div>
+                    <h3 style="margin-bottom: 1rem; color: white;">Real-time Eye Tracking</h3>
+                    <p style="color: #94a3b8; text-align: center; margin-bottom: 2rem;">Our system analyzes 468 facial landmarks for precise drowsiness detection</p>
+                    <div style="display: flex; gap: 1rem;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; color: var(--success);">99.3%</div>
+                            <div style="font-size: 0.8rem; color: #94a3b8;">Accuracy</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; color: var(--accent);">0.2s</div>
+                            <div style="font-size: 0.8rem; color: #94a3b8;">Response Time</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2>Advanced Safety Features</h2>
+            <p>Powered by machine learning and computer vision</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3>AI Fatigue Detection</h3>
+                <p>Real-time analysis of facial features and eye movement patterns to detect early signs of drowsiness.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-road"></i>
+                </div>
+                <h3>Lane Departure Alert</h3>
+                <p>Instant notifications when unintended lane deviations are detected, preventing potential accidents.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-volume-up"></i>
+                </div>
+                <h3>Smart Alerts</h3>
+                <p>Progressive alert system starting with gentle reminders and escalating to emergency warnings.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Demo Section -->
+    <section class="demo-section" id="demo">
+        <div class="demo-container">
+            <div class="demo-header">
+                <h2>Live Drowsiness Detection Demo</h2>
+                <span class="demo-tag">Real-time AI Analysis</span>
+            </div>
+            <div class="demo-content">
+                <div class="camera-container">
+                    <div class="camera-box">
+                        <video id="videoElement" autoplay muted playsinline></video>
+                        <canvas id="output_canvas"></canvas>
+                        <div class="loading" id="loadingIndicator">
+                            <div class="spinner"></div>
+                            <p>Initializing camera...</p>
+                        </div>
+                        <div class="camera-overlay">
+                            <div class="camera-status" id="cameraStatus">
+                                <div class="dot"></div>
+                                <span id="statusText">Camera Offline</span>
+                            </div>
+                            <div style="color: white; font-weight: 500;">
+                                <i class="fas fa-user"></i> 
+                                <span id="currentUser">Guest</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="controls" style="margin-top: 2rem;">
+                        <button id="startBtn" class="btn btn-primary">
+                            <i class="fas fa-play"></i> Start Detection
+                        </button>
+                        <button id="pauseBtn" class="btn btn-secondary" style="display: none;">
+                            <i class="fas fa-pause"></i> Pause Detection
+                        </button>
+                        <button id="calibrateBtn" class="btn btn-secondary" style="display: none;">
+                            <i class="fas fa-redo"></i> Recalibrate
+                        </button>
+                        <button id="stopBtn" class="btn btn-secondary" style="display: none; background: var(--danger);">
+                            <i class="fas fa-stop"></i> End Journey
+                        </button>
+                    </div>
+                </div>
+                <div class="stats-panel">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Detection Confidence</span>
+                            <span class="stat-trend">
+                                <i class="fas fa-arrow-up"></i>
+                                <span id="confTrend">98.5%</span>
+                            </span>
+                        </div>
+                        <div class="stat-value" id="confVal">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Journey Alerts</span>
+                            <span class="stat-trend" style="color: var(--danger);">
+                                <i class="fas fa-exclamation-circle"></i>
+                                Current
+                            </span>
+                        </div>
+                        <div class="stat-value" id="alertCount" style="color: var(--danger);">0</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="alertProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Eye Aspect Ratio</span>
+                            <span class="stat-trend">
+                                <i class="fas fa-chart-line"></i>
+                                Real-time
+                            </span>
+                        </div>
+                        <div class="stat-value" id="earValue">0.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Journey Duration</span>
+                            <span class="stat-trend">
+                                <i class="fas fa-clock"></i>
+                                Active
+                            </span>
+                        </div>
+                        <div class="stat-value" id="sessionTime">00:00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">System Status</span>
+                            <span class="stat-trend" id="systemStatusTrend">
+                                <i class="fas fa-circle"></i>
+                                Ready
+                            </span>
+                        </div>
+                        <div class="stat-value" id="systemStatus">Idle</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ANALYTICS DASHBOARD ===== -->
+    <section class="analytics-section" id="analytics">
+        <div class="analytics-container">
+            <div class="analytics-header">
+                <h2>Performance Analytics</h2>
+                <div class="date-range">
+                    <button class="date-btn active" onclick="changeTimeRange('week')">This Week</button>
+                    <button class="date-btn" onclick="changeTimeRange('month')">This Month</button>
+                    <button class="date-btn" onclick="changeTimeRange('year')">This Year</button>
+                    <button class="date-btn" onclick="changeTimeRange('all')">All Time</button>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="analytics-grid">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Alert Trends</h3>
+                        <div class="chart-stat" id="trendStat">0%</div>
+                    </div>
+                    <canvas id="alertTrendChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Focus Score Distribution</h3>
+                        <div class="chart-stat" id="avgScore">0.0</div>
+                    </div>
+                    <canvas id="scoreChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Peak Alert Times</h3>
+                        <div class="chart-stat" id="peakTime">N/A</div>
+                    </div>
+                    <canvas id="timeChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Session Duration</h3>
+                        <div class="chart-stat" id="avgDuration">0m</div>
+                    </div>
+                    <canvas id="durationChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="quick-stat-card">
+                    <div class="quick-stat-number" id="totalSessions">0</div>
+                    <div class="quick-stat-label">Total Sessions</div>
+                </div>
+                <div class="quick-stat-card">
+                    <div class="quick-stat-number" id="avgFocusScore">0.0</div>
+                    <div class="quick-stat-label">Avg Focus Score</div>
+                </div>
+                <div class="quick-stat-card">
+                    <div class="quick-stat-number" id="totalAlertsStat">0</div>
+                    <div class="quick-stat-label">Total Alerts</div>
+                </div>
+                <div class="quick-stat-card">
+                    <div class="quick-stat-number" id="bestStreak">0</div>
+                    <div class="quick-stat-label">Best Streak (days)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ACHIEVEMENTS SYSTEM ===== -->
+    <section class="encouragement-section" id="achievements">
+        <div class="encouragement-container">
+            <div class="section-header">
+                <h2>Achievements & Progress</h2>
+                <p>Track your safety journey and earn rewards</p>
+            </div>
+
+            <!-- Dynamic Encouragement Message -->
+            <div class="encouragement-messages" id="encouragementMessage">
+                <div class="message-header">
+                    <i class="fas fa-trophy"></i>
+                    <h3>Welcome to Drive Guardian AI!</h3>
+                </div>
+                <p class="message-content">Start your first journey to earn your first achievement</p>
+                <p class="message-subtext">Complete a journey to unlock the "First Drive" badge</p>
+            </div>
+
+            <!-- Achievements Grid -->
+            <div class="achievements-grid" id="achievementsGrid">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SESSION HISTORY ===== -->
+    <section class="history-section" id="history">
+        <div class="analytics-container">
+            <div class="analytics-header">
+                <h2>Session History</h2>
+                <button class="export-btn" onclick="exportHistory()">
+                    <i class="fas fa-download"></i> Export Data
+                </button>
+            </div>
+
+            <div class="history-table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Duration</th>
+                            <th>Focus Score</th>
+                            <th>Alerts</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analyticsHistoryTableBody">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PUBLISH JOURNEY SECTION ===== -->
+    <section class="publish-section" id="publish">
+        <div class="analytics-container">
+            <div class="section-header">
+                <h2>Publish Your Journey</h2>
+                <p>Share your driving safety achievements with the community</p>
+            </div>
+            
+            <div class="publish-card glass-effect" id="lastJourneyCard" style="display: none;">
+                <div class="publish-card-header">
+                    <h3>Your Last Journey</h3>
+                    <span class="publish-badge" id="journeyStatusBadge">Completed</span>
+                </div>
+                <div class="publish-card-content">
+                    <div class="journey-stats">
+                        <div class="journey-stat">
+                            <span class="stat-label">Focus Score</span>
+                            <span class="stat-value" id="lastJourneyScore">0.0</span>
+                        </div>
+                        <div class="journey-stat">
+                            <span class="stat-label">Duration</span>
+                            <span class="stat-value" id="lastJourneyDuration">0m</span>
+                        </div>
+                        <div class="journey-stat">
+                            <span class="stat-label">Alerts</span>
+                            <span class="stat-value" id="lastJourneyAlerts">0</span>
+                        </div>
+                    </div>
+                    <p class="journey-notes" id="lastJourneyNotes">No notes available</p>
+                    <div class="publish-actions">
+                        <button class="btn btn-primary" onclick="publishLastJourney()">
+                            <i class="fas fa-share-alt"></i> Publish to Community
+                        </button>
+                        <button class="btn btn-secondary" onclick="viewPublishedJourneys()">
+                            <i class="fas fa-chart-line"></i> View Community Rates
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="community-preview">
+                <h4>Recent Community Publications</h4>
+                <div id="communityPreview">
+                    <div class="no-data-message">
+                        <i class="fas fa-users"></i>
+                        <p>Be the first to publish a journey!</p>
+                    </div>
+                </div>
+                <a href="publish-rates.html" class="view-all-link">
+                    View All Published Journeys <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="footer-bottom">
+            <div class="copyright">© 2026 Drive Guardian AI Technologies. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <div class="fab-container">
+        <button class="fab" onclick="startDetectionFromFab()">
+            <i class="fas fa-shield-alt"></i>
+        </button>
+    </div>
+    <script src="test.js"></script>
+    <!-- Login Modal -->
+    <!-- Login Modal -->
+<div id="loginModal" class="login-modal">
+    <div class="login-card">
+        <button class="login-close" onclick="closeLoginModal()">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="modal-header">
+            <div style="text-align: center; width: 100%;">
+                <div class="logo-icon" style="margin: 0 auto 1rem; width: 60px; height: 60px;">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h2>Driver Login</h2>
+                <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 0.5rem;">
+                    Sign in to access your driver dashboard
+                </p>
+            </div>
+        </div>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="loginEmail">Email Address</label>
+                <input type="email"
+                       id="loginEmail"
+                       placeholder="driver@example.com"
+                       required
+                       autocomplete="email">
+            </div>
+
+            <div class="input-group">
+                <label for="loginPassword">Password</label>
+                <input type="password"
+                       id="loginPassword"
+                       placeholder="••••••••"
+                       required
+                       autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="login-submit-btn">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+        </form>
+
+        <div class="login-divider">
+            <span>Or continue with</span>
+        </div>
+
+        <div class="social-login-grid">
+            <button type="button" class="social-btn" onclick="simulateGoogleLogin()">
+                <i class="fab fa-google" style="color: #ea4335;"></i>
+                <span>Google</span>
+            </button>
+
+            <button type="button" class="social-btn" onclick="simulateMicrosoftLogin()">
+                <i class="fab fa-microsoft" style="color: #00a4ef;"></i>
+                <span>Microsoft</span>
+            </button>
+        </div>
+
+        <div class="login-footer">
+            <a href="#" style="display: block; margin-bottom: 0.5rem;">Forgot your password?</a>
+            <div>
+                <span style="color: #64748b;">Don't have an account? </span>
+                <a href="#" onclick="alert('Registration feature coming soon!')">Sign up</a>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+</html>

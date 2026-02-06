@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drive Guardian AI | Community Safety Rates</title>
+    
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="test.css">
+    
+    <style>
+        .journey-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .search-container {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.8rem 2.5rem 0.8rem 3rem;
+            background: var(--glass-dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            color: white;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            pointer-events: none; /* Prevents icon from interfering with clicks */
+        }
+
+        .clear-search-btn {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            display: none;
+            z-index: 2;
+        }
+
+        .clear-search-btn:hover {
+            color: var(--accent);
+        }
+
+        .search-active {
+            border-color: var(--accent) !important;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+
+        .no-results i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        .sort-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--glass-dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 0 1rem;
+        }
+        
+        .sort-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        
+        .sort-select {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 0.8rem 0;
+            font-size: 1rem;
+            cursor: pointer;
+            outline: none;
+            min-width: 150px;
+        }
+        
+        .sort-select option {
+            background: #1e293b;
+            color: white;
+        }
+        
+        .clear-search-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0.5rem;
+            margin-left: 0.5rem;
+            transition: var(--transition);
+        }
+        
+        .clear-search-btn:hover {
+            color: var(--accent);
+        }
+        
+        .search-active {
+            border-color: var(--accent) !important;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        
+        }
+        .rates-hero {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            padding: 4rem 10%;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .rates-hero-content {
+            flex: 1;
+            max-width: 800px;
+            z-index: 2;
+        }
+        
+        .community-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .community-stat {
+            text-align: center;
+            padding: 2rem;
+            background: var(--glass-dark);
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .community-stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .published-journey-card {
+            background: var(--glass-dark);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+        }
+        
+        .published-journey-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+        
+        .journey-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .driver-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .driver-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .driver-name {
+            font-weight: 600;
+            color: white;
+        }
+        
+        .journey-date {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .journey-performance {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .performance-item {
+            text-align: center;
+        }
+        
+        .performance-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            display: block;
+        }
+        
+        .performance-label {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .journey-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .journey-tag {
+            padding: 0.3rem 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: #cbd5e1;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #64748b;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-particles">
+        <div class="particle" style="width: 300px; height: 300px; top: 10%; left: 5%;"></div>
+        <div class="particle" style="width: 200px; height: 200px; top: 60%; right: 10%; animation-delay: -5s;"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="test.html" class="nav-logo">
+            <div class="logo-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <span class="logo-text">Drive Guardian AI</span>
+        </a>
+        <div class="nav-links">
+            <a href="test.html#demo">Live Demo</a>
+            <a href="test.html#analytics">Analytics</a>
+            <a href="test.html#achievements">Achievements</a>
+            <a href="test.html#publish">Publish</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="rates-hero">
+        <div class="rates-hero-content">
+            <span class="hero-badge">Community Safety</span>
+            <h1>Community Safety Rates</h1>
+            <p>Explore published journeys from drivers worldwide. Compare safety scores, learn from others, and contribute to making roads safer for everyone.</p>
+            
+            <div class="community-stats">
+                <div class="community-stat">
+                    <div class="community-stat-number" id="totalPublished">0</div>
+                    <div class="quick-stat-label">Published Journeys</div>
+                </div>
+                <div class="community-stat">
+                    <div class="community-stat-number" id="avgCommunityScore">0.0</div>
+                    <div class="quick-stat-label">Avg Safety Score</div>
+                </div>
+                <div class="community-stat">
+                    <div class="community-stat-number" id="topDriver">--</div>
+                    <div class="quick-stat-label">Top Driver Score</div>
+                </div>
+                <div class="community-stat">
+                    <div class="community-stat-number" id="totalDrivers">0</div>
+                    <div class="quick-stat-label">Community Members</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Published Journeys Section -->
+    <section class="analytics-section">
+        <div class="analytics-container">
+            <div class="analytics-header">
+                <h2>Published Journeys</h2>
+                <div class="date-range">
+                    <button class="date-btn active" onclick="filterJourneys('all')">All</button>
+                    <button class="date-btn" onclick="filterJourneys('week')">This Week</button>
+                    <button class="date-btn" onclick="filterJourneys('month')">This Month</button>
+                    <button class="date-btn" onclick="filterJourneys('top')">Top Rated</button>
+                </div>
+            </div>
+
+            <!-- Add search and sort controls here -->
+            <div class="journey-controls">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        id="searchJourneys" 
+                        placeholder="Search by driver name..."
+                        oninput="searchJourneys()"
+                    >
+                    <button class="clear-search-btn" id="clearSearchBtn" onclick="clearSearch()" style="display: none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="sort-container">
+                    <span class="sort-label">Sort by:</span>
+                    <select class="sort-select" id="sortSelect" onchange="sortJourneys()">
+                        <option value="date-desc">Newest First</option>
+                        <option value="date-asc">Oldest First</option>
+                        <option value="score-desc">Highest Score</option>
+                        <option value="score-asc">Lowest Score</option>
+                        <option value="name-asc">Driver Name A-Z</option>
+                        <option value="name-desc">Driver Name Z-A</option>
+                        <option value="duration-desc">Longest Duration</option>
+                        <option value="duration-asc">Shortest Duration</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="publishedJourneysList">
+                <!-- Dynamic content -->
+                <div class="empty-state">
+                    <i class="fas fa-road"></i>
+                    <h3>No journeys published yet</h3>
+                    <p>Be the first to publish a journey from the main dashboard!</p>
+                    <a href="test.html#publish" class="btn btn-primary" style="margin-top: 1.5rem;">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Insights Section -->
+    <section class="encouragement-section">
+        <div class="encouragement-container">
+            <div class="section-header">
+                <h2>Community Insights</h2>
+                <p>Learn from the community's driving patterns</p>
+            </div>
+
+            <div class="analytics-grid">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Safety Score Distribution</h3>
+                        <div class="chart-stat" id="communityAvgScore">0.0</div>
+                    </div>
+                    <canvas id="communityScoreChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Daily Publication Trend</h3>
+                        <div class="chart-stat" id="dailyPublications">0</div>
+                    </div>
+                    <canvas id="publicationTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-bottom">
+            <div class="copyright">© 2026 Drive Guardian AI Community. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <script src="publish-rates.js"></script>
+</body>
+</html>
