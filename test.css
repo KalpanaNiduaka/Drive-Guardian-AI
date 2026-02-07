@@ -442,7 +442,8 @@ nav {
 .date-range::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, var(--primary-light), var(--secondary));
     box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
-}.date-btn {
+}
+.date-btn {
     padding: 0.5rem 1rem;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
