@@ -10,31 +10,79 @@ let currentSort = 'date-desc';
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    // Check URL for search parameters (e.g., ?search=Kalpana)
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchParam = urlParams.get('search');
+    
+    if (searchParam) {
+        currentSearch = searchParam.toLowerCase().trim();
+        const searchInput = document.getElementById('searchJourneys');
+        if (searchInput) {
+            searchInput.value = searchParam;
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (clearBtn) clearBtn.style.display = 'block';
+            searchInput.classList.add('search-active');
+        }
+    }
+
+    // Seed initial data if storage is empty (using the requested names and Sri Lankan vehicles)
+    seedInitialData();
+    
     loadAndDisplayJourneys();
     updateCommunityStats();
-    initializeCommunityCharts();
+    // initializeCommunityCharts(); // Ensure this exists in your main UI script
     setupSearchListeners();
 });
+
+// Seed data based on your specific history file
+function seedInitialData() {
+    if (localStorage.getItem(PUBLISHED_JOURNEYS_KEY)) return;
+
+    const sriLankanVehicles = ["Tuk-tuk (Bajaj RE)", "Suzuki Wagon R", "Toyota Aqua", "Honda Fit", "Suzuki Alto", "Toyota Axio", "Tuk-tuk (TVS King)", "Nissan Dayz"];
+    const historyData = [
+        { "date": "2026-02-07T00:40:57.215Z", "duration": 3, "score": 10, "alerts": 0, "notes": "Excellent focus! Perfect session." },
+        { "date": "2026-02-07T00:13:06.641Z", "duration": 0, "score": 10, "alerts": 0, "notes": "Excellent focus! Perfect session." },
+        { "date": "2026-02-06T16:19:42.876Z", "duration": 1, "score": 6.1, "alerts": 8, "notes": "Needs improvement - high alert count detected." },
+        { "date": "2026-02-06T16:13:46.751Z", "duration": 0, "score": 9.5, "alerts": 1, "notes": "Good focus with minor distractions." },
+        { "date": "2026-02-06T14:45:12.332Z", "duration": 15, "score": 8.2, "alerts": 2, "notes": "Stable driving through Colombo traffic." },
+        { "date": "2026-02-06T09:03:43.381Z", "duration": 0, "score": 9.5, "alerts": 1, "notes": "Good focus with minor distractions." },
+        { "date": "2026-02-06T08:28:28.569Z", "duration": 0, "score": 6.5, "alerts": 7, "notes": "Needs improvement - high alert count detected." },
+        { "date": "2026-02-06T07:00:51.490Z", "duration": 2, "score": 7.6, "alerts": 5, "notes": "Needs improvement - high alert count detected." }
+    ];
+
+    const published = historyData.map((item, index) => ({
+        driverName: index % 2 === 0 ? "Kalpana Niduka" : "Vihas Dintharu",
+        timestamp: item.date,
+        score: item.score,
+        duration: item.duration,
+        alerts: item.alerts,
+        distance: (Math.random() * 15 + 1).toFixed(1) + " km",
+        notes: item.notes,
+        vehicleType: sriLankanVehicles[index % sriLankanVehicles.length]
+    }));
+
+    localStorage.setItem(PUBLISHED_JOURNEYS_KEY, JSON.stringify(published));
+}
 
 // Setup event listeners for search
 function setupSearchListeners() {
     const searchInput = document.getElementById('searchJourneys');
     const clearBtn = document.getElementById('clearSearchBtn');
+    if (!searchInput) return;
     
     searchInput.addEventListener('input', function() {
         currentSearch = this.value.toLowerCase().trim();
         if (currentSearch.length > 0) {
-            clearBtn.style.display = 'block';
+            if (clearBtn) clearBtn.style.display = 'block';
             searchInput.classList.add('search-active');
         } else {
-            clearBtn.style.display = 'none';
+            if (clearBtn) clearBtn.style.display = 'none';
             searchInput.classList.remove('search-active');
             currentSearch = '';
         }
         loadAndDisplayJourneys();
     });
     
-    // Add enter key support
     searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             loadAndDisplayJourneys();
@@ -42,15 +90,13 @@ function setupSearchListeners() {
     });
 }
 
-// Load, filter, search, sort and display journeys
 function loadAndDisplayJourneys() {
     let publishedJourneys = JSON.parse(localStorage.getItem(PUBLISHED_JOURNEYS_KEY) || '[]');
     const container = document.getElementById('publishedJourneysList');
+    if (!container) return;
     
-    // Apply time filter
     publishedJourneys = applyTimeFilter(publishedJourneys, currentFilter);
     
-    // Apply search filter
     if (currentSearch) {
         publishedJourneys = publishedJourneys.filter(journey => {
             const driverName = (journey.driverName || 'Anonymous Driver').toLowerCase();
@@ -58,213 +104,64 @@ function loadAndDisplayJourneys() {
         });
     }
     
-    // Apply sorting
     publishedJourneys = sortJourneysList(publishedJourneys, currentSort);
-    
-    // Display results
     displayJourneys(publishedJourneys, container);
 }
 
-// Apply time filter
 function applyTimeFilter(journeys, filter) {
-    if (filter === 'all') return journeys;
-    if (filter === 'top') return journeys; // Top rated is handled in sort
-    
+    if (filter === 'all' || filter === 'top') return journeys;
     const now = new Date();
-    let filteredJourneys = [...journeys];
+    const filterMap = {
+        'week': 7,
+        'month': 30
+    };
+    if (!filterMap[filter]) return journeys;
     
-    switch(filter) {
-        case 'week':
-            const weekAgo = new Date();
-            weekAgo.setDate(now.getDate() - 7);
-            filteredJourneys = journeys.filter(j => new Date(j.timestamp) >= weekAgo);
-            break;
-        case 'month':
-            const monthAgo = new Date();
-            monthAgo.setMonth(now.getMonth() - 1);
-            filteredJourneys = journeys.filter(j => new Date(j.timestamp) >= monthAgo);
-            break;
-    }
-    
-    return filteredJourneys;
+    const cutoff = new Date();
+    cutoff.setDate(now.getDate() - filterMap[filter]);
+    return journeys.filter(j => new Date(j.timestamp) >= cutoff);
 }
 
-// Sort journeys based on current sort option
 function sortJourneysList(journeys, sortOption) {
     const sorted = [...journeys];
-    
+    const getVal = (j, key) => (j[key] || '').toString().toLowerCase();
+
     switch(sortOption) {
-        case 'date-desc':
-            sorted.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            break;
-        case 'date-asc':
-            sorted.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-            break;
-        case 'score-desc':
-            sorted.sort((a, b) => b.score - a.score);
-            break;
-        case 'score-asc':
-            sorted.sort((a, b) => a.score - b.score);
-            break;
-        case 'name-asc':
-            sorted.sort((a, b) => {
-                const nameA = (a.driverName || 'Anonymous Driver').toLowerCase();
-                const nameB = (b.driverName || 'Anonymous Driver').toLowerCase();
-                return nameA.localeCompare(nameB);
-            });
-            break;
-        case 'name-desc':
-            sorted.sort((a, b) => {
-                const nameA = (a.driverName || 'Anonymous Driver').toLowerCase();
-                const nameB = (b.driverName || 'Anonymous Driver').toLowerCase();
-                return nameB.localeCompare(nameA);
-            });
-            break;
-        case 'duration-desc':
-            sorted.sort((a, b) => b.duration - a.duration);
-            break;
-        case 'duration-asc':
-            sorted.sort((a, b) => a.duration - b.duration);
-            break;
+        case 'date-desc': sorted.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); break;
+        case 'date-asc': sorted.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); break;
+        case 'score-desc': sorted.sort((a, b) => b.score - a.score); break;
+        case 'score-asc': sorted.sort((a, b) => a.score - b.score); break;
+        case 'name-asc': sorted.sort((a, b) => getVal(a, 'driverName').localeCompare(getVal(b, 'driverName'))); break;
+        case 'name-desc': sorted.sort((a, b) => getVal(b, 'driverName').localeCompare(getVal(a, 'driverName'))); break;
+        case 'duration-desc': sorted.sort((a, b) => b.duration - a.duration); break;
+        case 'duration-asc': sorted.sort((a, b) => a.duration - b.duration); break;
     }
-    
     return sorted;
 }
 
-// Display journeys in the container
 function displayJourneys(journeys, container) {
     if (journeys.length === 0) {
-        if (currentSearch) {
-            container.innerHTML = `
-                <div class="no-results">
-                    <i class="fas fa-search"></i>
-                    <h3>No results found</h3>
-                    <p>No drivers found matching "${currentSearch}"</p>
-                    <button class="btn btn-secondary" onclick="clearSearch()" style="margin-top: 1rem;">
-                        Clear Search
-                    </button>
-                </div>
-            `;
-        } else {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-road"></i>
-                    <h3>No journeys published yet</h3>
-                    <p>Be the first to publish a journey from the main dashboard!</p>
-                    <a href="test.html#publish" class="btn btn-primary" style="margin-top: 1.5rem;">
-                        <i class="fas fa-arrow-left"></i> Back to Dashboard
-                    </a>
-                </div>
-            `;
-        }
+        container.innerHTML = `<div class="no-results"><h3>No results found</h3><p>Try a different search term.</p></div>`;
         return;
     }
-    
     container.innerHTML = '';
-    journeys.forEach(journey => {
-        const journeyCard = createJourneyCard(journey);
-        container.appendChild(journeyCard);
-    });
+    journeys.forEach(journey => container.appendChild(createJourneyCard(journey)));
 }
 
-// Search journeys by driver name
-function searchJourneys() {
-    const searchInput = document.getElementById('searchJourneys');
-    currentSearch = searchInput.value.toLowerCase().trim();
-    const clearBtn = document.getElementById('clearSearchBtn');
-    
-    if (currentSearch.length > 0) {
-        clearBtn.style.display = 'block';
-        searchInput.classList.add('search-active');
-    } else {
-        clearBtn.style.display = 'none';
-        searchInput.classList.remove('search-active');
-        currentSearch = '';
-    }
-    
-    loadAndDisplayJourneys();
-}
-
-// Clear search
-function clearSearch() {
-    const searchInput = document.getElementById('searchJourneys');
-    const clearBtn = document.getElementById('clearSearchBtn');
-    
-    searchInput.value = '';
-    searchInput.classList.remove('search-active');
-    clearBtn.style.display = 'none';
-    currentSearch = '';
-    
-    loadAndDisplayJourneys();
-}
-
-// Sort journeys
-function sortJourneys() {
-    const sortSelect = document.getElementById('sortSelect');
-    currentSort = sortSelect.value;
-    loadAndDisplayJourneys();
-}
-
-// Update filterJourneys function to work with new system
-function filterJourneys(filter) {
-    currentFilter = filter;
-    
-    // Update active button
-    document.querySelectorAll('.date-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    event.target.classList.add('active');
-    
-    loadAndDisplayJourneys();
-}
-
-// Update community stats to consider filters
-function updateCommunityStats() {
-    const publishedJourneys = JSON.parse(localStorage.getItem(PUBLISHED_JOURNEYS_KEY) || '[]');
-    
-    document.getElementById('totalPublished').textContent = publishedJourneys.length;
-    
-    if (publishedJourneys.length > 0) {
-        const avgScore = publishedJourneys.reduce((sum, j) => sum + j.score, 0) / publishedJourneys.length;
-        document.getElementById('avgCommunityScore').textContent = avgScore.toFixed(1);
-        
-        // Find unique drivers
-        const uniqueDrivers = [...new Set(publishedJourneys.map(j => j.driverName).filter(Boolean))];
-        document.getElementById('totalDrivers').textContent = uniqueDrivers.length;
-        
-        // Find top score
-        const topScore = Math.max(...publishedJourneys.map(j => j.score));
-        document.getElementById('topDriver').textContent = topScore.toFixed(1);
-    } else {
-        document.getElementById('avgCommunityScore').textContent = '0.0';
-        document.getElementById('totalDrivers').textContent = '0';
-        document.getElementById('topDriver').textContent = '--';
-    }
-}
-
-// Create journey card HTML (updated to highlight search matches)
 function createJourneyCard(journey) {
     const card = document.createElement('div');
     card.className = 'published-journey-card';
-    
     const date = new Date(journey.timestamp);
     const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    const driverInitials = journey.driverName ? journey.driverName.split(' ').map(n => n[0]).join('').toUpperCase() : 'GU';
     
-    // Get driver initials for avatar
-    const driverInitials = journey.driverName ? 
-        journey.driverName.split(' ').map(n => n[0]).join('').toUpperCase() : 'GU';
-    
-    // Highlight search matches in driver name
     let displayName = journey.driverName || 'Anonymous Driver';
     if (currentSearch && displayName.toLowerCase().includes(currentSearch)) {
         const regex = new RegExp(`(${currentSearch})`, 'gi');
         displayName = displayName.replace(regex, '<mark>$1</mark>');
     }
     
-    // Determine rating color
-    let ratingColor = '#ef4444'; // red
-    if (journey.score >= 8) ratingColor = '#10b981'; // green
-    else if (journey.score >= 6) ratingColor = '#f59e0b'; // orange
+    let ratingColor = journey.score >= 8 ? '#10b981' : (journey.score >= 6 ? '#f59e0b' : '#ef4444');
     
     card.innerHTML = `
         <div class="journey-meta">
@@ -275,41 +172,65 @@ function createJourneyCard(journey) {
                     <div class="journey-date">${formattedDate}</div>
                 </div>
             </div>
-            <div style="font-size: 1.8rem; font-weight: 700; color: ${ratingColor}">
-                ${journey.score.toFixed(1)}/10
-            </div>
+            <div style="font-size: 1.8rem; font-weight: 700; color: ${ratingColor}">${journey.score.toFixed(1)}/10</div>
         </div>
-        
         <div class="journey-performance">
-            <div class="performance-item">
-                <span class="performance-value">${journey.duration}m</span>
-                <span class="performance-label">Duration</span>
-            </div>
-            <div class="performance-item">
-                <span class="performance-value">${journey.alerts}</span>
-                <span class="performance-label">Alerts</span>
-            </div>
-            <div class="performance-item">
-                <span class="performance-value">${journey.distance || '--'}</span>
-                <span class="performance-label">Distance</span>
-            </div>
+            <div class="performance-item"><span class="performance-value">${journey.duration}m</span><span class="performance-label">Duration</span></div>
+            <div class="performance-item"><span class="performance-value">${journey.alerts}</span><span class="performance-label">Alerts</span></div>
+            <div class="performance-item"><span class="performance-value">${journey.distance || '--'}</span><span class="performance-label">Distance</span></div>
         </div>
-        
         <p style="color: #cbd5e1; margin-bottom: 1rem;">${journey.notes || 'No additional notes'}</p>
-        
         <div class="journey-tags">
             ${journey.score >= 8 ? '<span class="journey-tag" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">Excellent Focus</span>' : ''}
             ${journey.alerts === 0 ? '<span class="journey-tag" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">Alert-Free</span>' : ''}
-            ${journey.duration >= 30 ? '<span class="journey-tag" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;">Long Drive</span>' : ''}
             <span class="journey-tag">${journey.vehicleType || 'Car'}</span>
-        </div>
-    `;
-    
+        </div>`;
     return card;
 }
 
-// Make functions available globally
-window.filterJourneys = filterJourneys;
-window.searchJourneys = searchJourneys;
-window.clearSearch = clearSearch;
-window.sortJourneys = sortJourneys;
+function updateCommunityStats() {
+    const published = JSON.parse(localStorage.getItem(PUBLISHED_JOURNEYS_KEY) || '[]');
+    const totalPublished = document.getElementById('totalPublished');
+    if (!totalPublished) return;
+    
+    totalPublished.textContent = published.length;
+    if (published.length > 0) {
+        const avgScore = document.getElementById('avgCommunityScore');
+        const totalDrivers = document.getElementById('totalDrivers');
+        const topDriver = document.getElementById('topDriver');
+        
+        if (avgScore) avgScore.textContent = (published.reduce((sum, j) => sum + j.score, 0) / published.length).toFixed(1);
+        if (totalDrivers) totalDrivers.textContent = [...new Set(published.map(j => j.driverName))].length;
+        if (topDriver) topDriver.textContent = Math.max(...published.map(j => j.score)).toFixed(1);
+    }
+}
+
+// Global UI Handlers
+window.filterJourneys = (filter) => {
+    currentFilter = filter;
+    document.querySelectorAll('.date-btn').forEach(btn => {
+        const onclickAttr = btn.getAttribute('onclick');
+        if (onclickAttr) {
+            btn.classList.toggle('active', onclickAttr.includes(filter));
+        }
+    });
+    loadAndDisplayJourneys();
+};
+window.sortJourneys = () => {
+    const sortSelect = document.getElementById('sortSelect');
+    if (sortSelect) {
+        currentSort = sortSelect.value;
+        loadAndDisplayJourneys();
+    }
+};
+window.clearSearch = () => {
+    const searchInput = document.getElementById('searchJourneys');
+    if (searchInput) {
+        searchInput.value = '';
+        currentSearch = '';
+        searchInput.classList.remove('search-active');
+        const clearBtn = document.getElementById('clearSearchBtn');
+        if (clearBtn) clearBtn.style.display = 'none';
+        loadAndDisplayJourneys();
+    }
+};
