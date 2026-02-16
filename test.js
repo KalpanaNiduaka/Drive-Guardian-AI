@@ -291,6 +291,7 @@ function publishLastJourney() {
 }
 
 // Load community preview
+// Load community preview
 function loadCommunityPreview() {
     const publishedJourneys = JSON.parse(localStorage.getItem(PUBLISHED_JOURNEYS_KEY) || '[]');
     const previewContainer = document.getElementById('communityPreview');
@@ -311,66 +312,29 @@ function loadCommunityPreview() {
     const recentJourneys = [...publishedJourneys]
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
         .slice(0, 3);
+    
     previewContainer.innerHTML = recentJourneys.map(journey => {
-        // Dynamic color logic for the score badge
         const scoreColor = journey.score >= 8 ? '#10b981' : journey.score >= 6 ? '#f59e0b' : '#ef4444';
         const scoreBg = journey.score >= 8 ? 'rgba(16, 185, 129, 0.15)' : journey.score >= 6 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)';
 
         return `
-            <div style="
-                background: rgba(255, 255, 255, 0.08); 
-                backdrop-filter: blur(8px);
-                -webkit-backdrop-filter: blur(8px);
-                padding: 1.25rem; 
-                border-radius: 16px; 
-                margin-bottom: 1rem; 
-                margin-right: 1rem;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            ">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <div class="community-card">
+                <div class="community-card-header">
                     <div>
-                        <div style="color: white; font-weight: 600; font-size: 1.05rem; letter-spacing: 0.02em;">
-                            ${journey.driverName || 'Anonymous'}
-                        </div>
-                        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">
-                            ${new Date(journey.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </div>
+                        <div class="driver-name">${journey.driverName || 'Anonymous'}</div>
+                        <div class="journey-date">${new Date(journey.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                     </div>
-                    <div style="
-                        background: ${scoreBg};
-                        color: ${scoreColor};
-                        padding: 4px 12px;
-                        border-radius: 8px;
-                        font-size: 1.1rem; 
-                        font-weight: 700;
-                    ">
-                        ${journey.score.toFixed(1)}
-                    </div>
+                    <div class="score-badge" style="background: ${scoreBg}; color: ${scoreColor};">${journey.score.toFixed(1)}</div>
                 </div>
-
-                <div style="
-                    display: flex; 
-                    align-items: center;
-                    gap: 0.75rem; 
-                    font-size: 0.85rem; 
-                    color: #cbd5e1;
-                    border-top: 1px solid rgba(255, 255, 255, 0.05);
-                    padding-top: 0.75rem;
-                ">
-                    <span style="display: flex; align-items: center; gap: 4px;">
-                        <span style="opacity: 0.7;">🕒</span> ${journey.duration}m
-                    </span>
-                    <span style="color: rgba(255,255,255,0.2);">|</span>
-                    <span style="display: flex; align-items: center; gap: 4px;">
-                        <span style="opacity: 0.7;">⚠️</span> ${journey.alerts} alerts
-                    </span>
+                <div class="community-card-stats">
+                    <span>🕒 ${journey.duration}m</span>
+                    <span>|</span>
+                    <span>⚠️ ${journey.alerts} alerts</span>
                 </div>
             </div>
         `;
     }).join('');
 }
-
 // View published journeys
 function viewPublishedJourneys() {
     window.location.href = 'publish-rates.html';
@@ -1473,7 +1437,33 @@ function handleEmailLogin(email, password) {
         alert('Please enter both email and password');
     }
 }
+// Hamburger menu toggle
+const menuToggle = document.querySelector('.menu-toggle');
+const navLinks = document.querySelector('.nav-links');
 
+if (menuToggle && navLinks) {
+    menuToggle.addEventListener('click', () => {
+        navLinks.classList.toggle('show');
+        // Change icon (optional)
+        const icon = menuToggle.querySelector('i');
+        if (icon) {
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        }
+    });
+
+    // Close menu when a link is clicked
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('show');
+            const icon = menuToggle.querySelector('i');
+            if (icon) {
+                icon.classList.add('fa-bars');
+                icon.classList.remove('fa-times');
+            }
+        });
+    });
+}
 // ===== EVENT LISTENERS AND INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', async () => {
