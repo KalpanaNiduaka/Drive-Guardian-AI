@@ -40,14 +40,14 @@ function seedInitialData() {
 
     const sriLankanVehicles = ["Tuk-tuk (Bajaj RE)", "Suzuki Wagon R", "Toyota Aqua", "Honda Fit", "Suzuki Alto", "Toyota Axio", "Tuk-tuk (TVS King)", "Nissan Dayz"];
     const historyData = [
-        { "date": "2026-02-07T00:40:57.215Z", "duration": 3, "score": 10, "alerts": 0, "notes": "Excellent focus! Perfect session." },
-        { "date": "2026-02-07T00:13:06.641Z", "duration": 0, "score": 10, "alerts": 0, "notes": "Excellent focus! Perfect session." },
-        { "date": "2026-02-06T16:19:42.876Z", "duration": 1, "score": 6.1, "alerts": 8, "notes": "Needs improvement - high alert count detected." },
-        { "date": "2026-02-06T16:13:46.751Z", "duration": 0, "score": 9.5, "alerts": 1, "notes": "Good focus with minor distractions." },
+        { "date": "2026-02-07T00:40:57.215Z", "duration": 23, "score": 10, "alerts": 0, "notes": "Excellent focus! Perfect session." },
+        { "date": "2026-02-07T00:13:06.641Z", "duration": 20, "score": 10, "alerts": 0, "notes": "Excellent focus! Perfect session." },
+        { "date": "2026-02-06T16:19:42.876Z", "duration": 60, "score": 6.1, "alerts": 8, "notes": "Needs improvement - high alert count detected." },
+        { "date": "2026-02-06T16:13:46.751Z", "duration": 24, "score": 9.5, "alerts": 1, "notes": "Good focus with minor distractions." },
         { "date": "2026-02-06T14:45:12.332Z", "duration": 15, "score": 8.2, "alerts": 2, "notes": "Stable driving through Colombo traffic." },
-        { "date": "2026-02-06T09:03:43.381Z", "duration": 0, "score": 9.5, "alerts": 1, "notes": "Good focus with minor distractions." },
-        { "date": "2026-02-06T08:28:28.569Z", "duration": 0, "score": 6.5, "alerts": 7, "notes": "Needs improvement - high alert count detected." },
-        { "date": "2026-02-06T07:00:51.490Z", "duration": 2, "score": 7.6, "alerts": 5, "notes": "Needs improvement - high alert count detected." }
+        { "date": "2026-02-06T09:03:43.381Z", "duration": 23, "score": 9.5, "alerts": 1, "notes": "Good focus with minor distractions." },
+        { "date": "2026-02-06T08:28:28.569Z", "duration": 43, "score": 6.5, "alerts": 7, "notes": "Needs improvement - high alert count detected." },
+        { "date": "2026-02-06T07:00:51.490Z", "duration": 34, "score": 7.6, "alerts": 5, "notes": "Needs improvement - high alert count detected." }
     ];
 
     const published = historyData.map((item, index) => ({
