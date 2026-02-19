@@ -32,6 +32,155 @@ body {
     position: relative;
 }
 
+/* Loading Screen Styles */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #000000b0 0%, #0000008c 50%, #ff000071 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+
+        #loading-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-indicator {
+            display: none;
+        }
+
+        .loading-indicator.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            animation: titlePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        /* Loader 2: DNA Helix */
+        .loader-dna .loading-title {
+            color: #9933ff;
+            text-shadow: 0 0 20px rgba(153, 51, 255, 0.6);
+        }
+
+        .container-dna {
+            --uib-size: 150px;
+            --uib-speed: 2.5s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: var(--uib-size);
+            width: var(--uib-size);
+        }
+
+        .slice {
+            position: relative;
+            height: calc(var(--uib-size) / 6);
+            width: 100%;
+        }
+
+        .slice::before,
+        .slice::after {
+            --uib-a: calc(var(--uib-speed) / -2);
+            --uib-b: calc(var(--uib-speed) / -6);
+            content: "";
+            position: absolute;
+            top: 0;
+            left: calc(50% - var(--uib-size) / 12);
+            height: 100%;
+            width: calc(100% / 6);
+            border-radius: 50%;
+            background-color: var(--uib-color);
+            flex-shrink: 0;
+            animation: orbit var(--uib-speed) linear infinite;
+            transition: background-color 0.3s ease;
+        }
+
+        .slice:nth-child(1)::after { animation-delay: var(--uib-a); }
+        .slice:nth-child(2)::before { animation-delay: var(--uib-b); }
+        .slice:nth-child(2)::after { animation-delay: calc(var(--uib-a) + var(--uib-b)); }
+        .slice:nth-child(3)::before { animation-delay: calc(var(--uib-b) * 2); }
+        .slice:nth-child(3)::after { animation-delay: calc(var(--uib-a) + var(--uib-b) * 2); }
+        .slice:nth-child(4)::before { animation-delay: calc(var(--uib-b) * 3); }
+        .slice:nth-child(4)::after { animation-delay: calc(var(--uib-a) + var(--uib-b) * 3); }
+        .slice:nth-child(5)::before { animation-delay: calc(var(--uib-b) * 4); }
+        .slice:nth-child(5)::after { animation-delay: calc(var(--uib-a) + var(--uib-b) * 4); }
+        .slice:nth-child(6)::before { animation-delay: calc(var(--uib-b) * 5); }
+        .slice:nth-child(6)::after { animation-delay: calc(var(--uib-a) + var(--uib-b) * 5); }
+
+        @keyframes orbit {
+            0% { transform: translateX(calc(var(--uib-size) * 0.25)) scale(0.73684); opacity: 0.65; }
+            25% { transform: translateX(0%) scale(0.47368); opacity: 0.3; }
+            50% { transform: translateX(calc(var(--uib-size) * -0.25)) scale(0.73684); opacity: 0.65; }
+            75% { transform: translateX(0%) scale(1); opacity: 1; }
+            100% { transform: translateX(calc(var(--uib-size) * 0.25)) scale(0.73684); opacity: 0.65; }
+        }
+
+        .slice:nth-child(1)::before, .slice:nth-child(1)::after { background-color: #334dff; }
+        .slice:nth-child(2)::before, .slice:nth-child(2)::after { background-color: #333eff; }
+        .slice:nth-child(3)::before, .slice:nth-child(3)::after { background-color: #3334ff; }
+        .slice:nth-child(4)::before, .slice:nth-child(4)::after { background-color: #4433ff; }
+        .slice:nth-child(5)::before, .slice:nth-child(5)::after { background-color: #6633ff; }
+        .slice:nth-child(6)::before, .slice:nth-child(6)::after { background-color: #9933ff; }
+
+        /* Loader 4: Heartbeat */
+        .loader-heartbeat .loading-title {
+            color: #ff4646;
+            text-shadow: 0 0 20px rgba(222, 98, 98, 0.6);
+        }
+
+        .loader-wave {
+            --dasharray: 814;
+            position: relative;
+            width: 100%;
+            max-width: 550px;
+            height: 206px;
+            background: transparent none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loader-wave svg {
+            position: absolute;
+            width: 100%;
+            max-width: 550px;
+            height: auto;
+        }
+
+        .loader-wave svg path {
+            stroke-dasharray: var(--dasharray);
+            animation: heartRate 5s infinite linear forwards;
+            filter: drop-shadow(0 0 10px rgba(222, 98, 98, 0.6));
+        }
+
+        @keyframes heartRate {
+            from { stroke-dashoffset: var(--dasharray); }
+            to { stroke-dashoffset: calc(var(--dasharray) * -1px); }
+        }
+
 /* ===== ANIMATED BACKGROUND ===== */
 .bg-particles {
     position: fixed;
@@ -349,12 +498,13 @@ nav {
 .demo-screen {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #1e293b, #0f172a);
+    background: linear-gradient(135deg, rgba(44, 5, 5, 0.877), rgba(0, 2, 126, 0.678)), url('images/ChatGPT Image Jan 11, 2026, 08_29_02 PM.png') center/cover no-repeat;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 2rem;
+
 }
 
 .demo-status {
@@ -1196,9 +1346,13 @@ canvas {
 
 #communityPreview {
     min-height: 100px;
+    max-width: 100vh;
+    overflow-y: auto; /* Changed to auto for scrollable content */
     display: flex;
     align-items: center;
     justify-content: center;
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
 }
 
 .no-data-message {
