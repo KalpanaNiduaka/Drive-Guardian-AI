@@ -1637,3 +1637,80 @@ window.simulateGoogleLogin = simulateGoogleLogin;
 window.simulateMicrosoftLogin = simulateMicrosoftLogin;
 window.publishLastJourney = publishLastJourney;
 window.viewPublishedJourneys = viewPublishedJourneys;
+
+
+// ============================================
+// PROFESSIONAL CARD ENTRANCE ANIMATIONS
+// ============================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Card entrance animation - simple & professional */
+        .card-animate {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-animate.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Stagger delays for cards */
+        .card-delay-1 { transition-delay: 0.1s; }
+        .card-delay-2 { transition-delay: 0.2s; }
+        .card-delay-3 { transition-delay: 0.3s; }
+        .card-delay-4 { transition-delay: 0.4s; }
+        .card-delay-5 { transition-delay: 0.5s; }
+
+        /* Smooth transitions */
+        .card-animate {
+            will-change: transform, opacity;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Get all cards
+    const cards = document.querySelectorAll(
+        '.feature-card, .stat-card, .achievement-card, ' +
+        '.chart-container, .quick-stat-card, .publish-card, ' +
+        '.community-card, .history-table-container'
+    );
+
+    // Create intersection observer
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Add visible class
+                entry.target.classList.add('visible');
+                // Stop observing after animation
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -20px 0px'
+    });
+
+    // Apply animation class and observe each card
+    cards.forEach((card, index) => {
+        card.classList.add('card-animate');
+        
+        // Add staggered delay based on position
+        const delayIndex = (index % 5) + 1;
+        card.classList.add(`card-delay-${delayIndex}`);
+        
+        observer.observe(card);
+    });
+
+    // Make hero section cards visible immediately
+    setTimeout(() => {
+        document.querySelectorAll('.hero .card-animate').forEach(card => {
+            card.classList.add('visible');
+        });
+    }, 3100); // After loading screen
+});
