@@ -86,9 +86,9 @@ const achievements = [
         name: "30-Minute Master", 
         description: "Complete a 30+ minute session", 
         icon: "clock", 
-        condition: (history) => history.some(s => s.duration >= 30),
+        condition: (history) => history.some(s => s.duration >= 1800),
         progress: (history) => {
-            const longSessions = history.filter(s => s.duration >= 30).length;
+            const longSessions = history.filter(s => s.duration >= 1800).length;
             return Math.min(100, longSessions * 100);
         }
     },
@@ -212,7 +212,7 @@ function displayLastJourney(journey) {
     card.style.display = 'block';
     
     document.getElementById('lastJourneyScore').textContent = journey.score.toFixed(1);
-    document.getElementById('lastJourneyDuration').textContent = journey.duration + 'm';
+    document.getElementById('lastJourneyDuration').textContent = formatDuration(journey.duration);
     document.getElementById('lastJourneyAlerts').textContent = journey.alerts;
     document.getElementById('lastJourneyNotes').textContent = journey.notes;
     
@@ -327,7 +327,7 @@ function loadCommunityPreview() {
                     <div class="score-badge" style="background: ${scoreBg}; color: ${scoreColor};">${journey.score.toFixed(1)}</div>
                 </div>
                 <div class="community-card-stats">
-                    <span>🕒 ${journey.duration}m</span>
+                    <span>🕒 ${formatDuration(journey.duration)}</span>
                     <span>|</span>
                     <span>⚠️ ${journey.alerts} alerts</span>
                 </div>
@@ -672,13 +672,13 @@ async function startDetection() {
 function enhancedStopDetection() {
     if (isDetectionActive && sessionStartTime) {
         // Calculate session metrics for analytics
-        const sessionDuration = Math.floor((Date.now() - sessionStartTime) / 60000); // minutes
+        const sessionDurationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000); // seconds
         const sessionScore = calculateSessionScore();
         const sessionAlerts = journeyAlerts;
         const sessionStatus = determineSessionStatus(sessionScore, sessionAlerts);
         
         // Save session data
-        saveSessionData(sessionDuration, sessionScore, sessionAlerts, sessionStatus);
+        saveSessionData(sessionDurationSeconds, sessionScore, sessionAlerts, sessionStatus);
     }
     
     // Call original stop logic
@@ -738,6 +738,17 @@ function resetCalibration() {
 
 // ===== ANALYTICS FUNCTIONS =====
 
+// Helper function to format duration in minutes and seconds
+function formatDuration(totalSeconds) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    if (minutes > 0) {
+        return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`;
+    } else {
+        return `${seconds}s`;
+    }
+}
+
 function saveSessionData(duration, score, alerts, status) {
     const session = {
         id: Date.now(),
@@ -775,8 +786,9 @@ function calculateSessionScore() {
     const alertPenalty = journeyAlerts * 0.5;
     baseScore -= alertPenalty;
     
-    // Bonus for longer durations
-    const durationMinutes = Math.floor((Date.now() - sessionStartTime) / 60000);
+    // Bonus for longer durations (convert seconds to minutes for calculation)
+    const durationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
+    const durationMinutes = durationSeconds / 60;
     const durationBonus = Math.min(2, durationMinutes / 15);
     baseScore += durationBonus;
     
@@ -836,7 +848,7 @@ function updateAnalyticsUI() {
     document.getElementById('totalAlertsStat').textContent = totalAlertsCount;
     document.getElementById('avgFocusScore').textContent = avgScore;
     document.getElementById('avgScore').textContent = avgScore;
-    document.getElementById('avgDuration').textContent = avgDuration + 'm';
+    document.getElementById('avgDuration').textContent = formatDuration(avgDuration);
     document.getElementById('trendStat').textContent = trend;
     document.getElementById('peakTime').textContent = peakTime;
     
@@ -932,7 +944,7 @@ function updateHistoryTable() {
         
         row.innerHTML = `
             <td>${formattedDate}</td>
-            <td>${session.duration} min</td>
+            <td>${formatDuration(session.duration)}</td>
             <td>${session.score.toFixed(1)}/10</td>
             <td>${session.alerts}</td>
             <td><span class="status-badge ${statusClass}">${session.status.toUpperCase()}</span></td>
@@ -1284,7 +1296,7 @@ function getChartOptions(yLabel, dataType) {
                 ticks: {
                     color: '#94a3b8',
                     callback: function(value) {
-                        return dataType === 'duration' ? value + 'm' : value;
+                        return dataType === 'duration' ? (value >= 60 ? Math.floor(value/60) + 'm' : value + 's') : value;
                     }
                 }
             },
