@@ -1111,7 +1111,7 @@ canvas {
 /* ===== FEATURES SECTION ===== */
 .features {
     padding: 8rem 10%;
-    background: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 0.7));
+    background-attachment: fixed;
 }
 
 .section-header {
@@ -1142,6 +1142,16 @@ canvas {
     margin: 0 auto;
 }
 
+#f1{
+    background: linear-gradient(135deg, rgba(41, 5, 5, 0.534), rgba(0, 1, 32, 0.87)), url('images/image3.jpg') center/cover no-repeat;
+}
+#f2{
+    background: linear-gradient(135deg, rgba(44, 5, 5, 0.582), rgba(0, 1, 87, 0.329)), url('images/image4.jpg') center/cover no-repeat;
+}
+#f3{
+    background: linear-gradient(135deg, rgba(41, 5, 5, 0.562), rgba(0, 1, 32, 0.87)), url('images/image3.jpg') center/cover no-repeat;
+}
+
 .feature-card {
     background: var(--glass-dark);
     backdrop-filter: blur(20px);
@@ -1152,15 +1162,7 @@ canvas {
     position: relative;
     overflow: hidden;
 }
-#f1{
-    background: linear-gradient(135deg, rgba(41, 5, 5, 0.534), rgba(0, 1, 32, 0.87)), url('images/image3.jpg') center/cover no-repeat;
-}
-#f2{
-    background: linear-gradient(135deg, rgba(44, 5, 5, 0.582), rgba(0, 1, 87, 0.329)), url('images/image4.jpg') center/cover no-repeat;
-}
-#f3{
-    background: linear-gradient(135deg, rgba(41, 5, 5, 0.562), rgba(0, 1, 32, 0.87)), url('images/image3.jpg') center/cover no-repeat;
-}
+
 .feature-card::after {
     content: '';
     position: absolute;
@@ -1208,7 +1210,6 @@ canvas {
     line-height: 1.6;
     margin-bottom: 1.5rem;
 }
-
 /* ===== STATS SECTION ===== */
 .stats-section {
     padding: 8rem 10%;
@@ -2505,6 +2506,7 @@ footer {
 .form-input::placeholder {
     color: rgba(255, 255, 255, 0.4);
 }
+
 
 
 
